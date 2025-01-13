@@ -1,0 +1,95 @@
+import requests
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+
+# Function to fetch data from OpenWeatherMap API
+def fetch_weather_data(city, api_key):
+    url = f"https://api.openweathermap.org/data/2.5/forecast?q={city}&appid={api_key}&units=metric"
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print("Failed to fetch data. Check the city name or API key.")
+        return None
+
+# Function to parse weather data
+def parse_weather_data(data):
+    forecasts = []
+    for entry in data['list']:
+        forecasts.append({
+            "datetime": entry['dt_txt'],
+            "temperature": entry['main']['temp'],
+            "humidity": entry['main']['humidity'],
+            "weather": entry['weather'][0]['main']
+        })
+    return pd.DataFrame(forecasts)
+
+# Function to visualize weather data
+def visualize_weather_data(df):
+    sns.set_theme(style="whitegrid")
+
+    # Temperature plot
+    plt.figure(figsize=(10, 6))
+    sns.lineplot(x="datetime", y="temperature", data=df, marker="o", label="Temperature (°C)")
+    plt.xticks(rotation=45)
+    plt.title("Temperature Forecast")
+    plt.xlabel("Datetime")
+    plt.ylabel("Temperature (°C)")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+    # Humidity plot
+    plt.figure(figsize=(10, 6))
+    sns.lineplot(x="datetime", y="humidity", data=df, marker="o", label="Humidity (%)", color="orange")
+    plt.xticks(rotation=45)
+    plt.title("Humidity Forecast")
+    plt.xlabel("Datetime")
+    plt.ylabel("Humidity (%)")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+    # Weather condition count plot
+    plt.figure(figsize=(8, 6))
+    sns.countplot(x="weather", data=df, palette="viridis")
+    plt.title("Weather Conditions Frequency")
+    plt.xlabel("Weather Condition")
+    plt.ylabel("Frequency")
+    plt.tight_layout()
+    plt.show()
+
+# Main script
+if __name__ == "__main__":
+    # Replace with your OpenWeatherMap API key
+    API_KEY = "c64e7744028a206679dadb0b1d05770c"
+    CITY = "London"  # Replace with your city of choice
+
+    # Fetch and process data
+    weather_data = fetch_weather_data(CITY, API_KEY)
+    if weather_data:
+        weather_df = parse_weather_data(weather_data)
+        print(weather_df.head())
+
+        # Visualize data
+        visualize_weather_data(weather_df)
+
+# Debugging setup
+API_KEY = "c64e7744028a206679dadb0b1d05770c"
+CITY = "London"
+
+# API call
+url = f"https://api.openweathermap.org/data/2.5/forecast?q={CITY}&appid={API_KEY}&units=metric"
+response = requests.get(url)
+
+# Debugging output
+print("Status Code:", response.status_code)
+if response.status_code != 200:
+    print("Error:", response.json())
+else:
+    data = response.json()
+    print("Data fetched successfully!")
+
+     
+
